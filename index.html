@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Video Enhancer Dashboard</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+  <div class="container">
+    <header class="header">
+      <h1>
+        <span class="icon">🎬</span>
+        Video Enhancer Dashboard
+      </h1>
+    </header>
+
+    <main class="main-content">
+      <!-- Left Panel: Upload Area -->
+      <section class="upload-panel">
+        <h2>Step 1: Upload Video</h2>
+        <div class="upload-area" id="dropArea">
+          <div class="upload-instruction">
+            <div class="upload-icon">📁</div>
+            <div class="drop-text">Drop Video Here</div>
+            <div class="upload-separator">or</div>
+            <div class="click-text">Click to Upload</div>
+            <input type="file" id="fileInput" accept="video/*" style="display: none" />
+          </div>
+        </div>
+        <div class="selected-file-info" id="fileInfo">
+          <span id="fileName">No file selected</span>
+        </div>
+      </section>
+
+      <!-- Center Panel: Preview Area -->
+      <section class="preview-panel">
+        <h2>Preview</h2>
+        <div class="preview-container">
+          <div class="preview-box">
+            <div class="preview-label">Before</div>
+            <video id="originalVideo" class="preview-video" controls></video>
+          </div>
+            <div class="preview-box">
+              <div class="preview-label">After</div>
+              <video id="enhancedVideo" class="preview-video" controls playsinline>
+                Your browser does not support the video tag.
+              </video>
+              <div id="enhancedPlaceholder" class="preview-placeholder">
+                Enhanced video will appear here
+              </div>
+            </div>
+      </section>
+
+      <!-- Right Panel: Enhancement Settings -->
+      <section class="settings-panel">
+        <h2>Enhancement Settings</h2>
+
+        <!-- Upscaling Setting -->
+        <div class="setting-group">
+          <label for="upscaling">Upscaling</label>
+          <select id="upscaling" class="setting-dropdown">
+            <option value="2x">2x (HD to 4K)</option>
+            <option value="4x">4x (SD to 4K)</option>
+          </select>
+        </div>
+
+        <!-- Sharpening Intensity -->
+        <div class="setting-group">
+          <label for="sharpening">Sharpening Intensity</label>
+          <div class="slider-container">
+            <input type="range" id="sharpening" min="0" max="100" value="50" class="slider" />
+            <div class="slider-value" id="sharpeningValue">50</div>
+          </div>
+        </div>
+
+        <!-- Noise Reduction Level -->
+        <div class="setting-group">
+          <label>Noise Reduction Level</label>
+          <div class="toggle-group">
+            <button class="toggle-btn active" data-value="low">Low</button>
+            <button class="toggle-btn" data-value="medium">Medium</button>
+            <button class="toggle-btn" data-value="high">High</button>
+          </div>
+        </div>
+
+        <!-- Frame Rate Enhancement -->
+        <div class="setting-group">
+          <label for="frameRate">Frame Rate Enhancement</label>
+          <select id="frameRate" class="setting-dropdown">
+            <option value="1">1x</option>
+            <option value="2">2x</option>
+            <option value="4">4x</option>
+          </select>
+        </div>
+
+        <!-- Save/Export Options -->
+        <!-- <div class="setting-group">
+          <label for="outputFormat">Output Format</label>
+          <select id="outputFormat" class="setting-dropdown">
+            <option value="MP4">MP4</option>
+            <option value="MOV">MOV</option>
+            <option value="AVI">AVI</option>
+            <option value="MKV">MKV</option>
+          </select>
+        </div> -->
+
+        <div class="setting-group">
+          <label>Save Location</label>
+          <button id="saveLocationBtn" class="location-btn">
+            Choose Location
+          </button>
+          <div id="selectedLocation" class="selected-location">
+            Default location
+          </div>
+        </div>
+
+        <!-- Enhance Button -->
+        <button id="enhanceBtn" class="enhance-btn">Enhance</button>
+      </section>
+      </section>
+    </main>
+  </div>
+  <!-- History Button -->
+  <button id="historyBtn" class="history-btn" title="View Enhancement History">
+    <span class="history-icon">📜</span> History
+  </button>
+
+  <!-- History Modal -->
+  <div id="historyModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Enhanced Videos History</h2>
+        <span class="close-modal">&times;</span>
+      </div>
+      <div class="history-list" id="historyList"></div>
+    </div>
+  </div>
+  <script src="renderer.js"></script>
+</body>
+
+</html>
