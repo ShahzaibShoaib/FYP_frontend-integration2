@@ -209,13 +209,31 @@ async function enhanceVideo() {
   enhanceBtn.textContent = 'Processing...';
 
   // Create progress container
+  const previewBox = document.querySelector('.preview-box:nth-child(2)');
+  const placeholder = previewBox.querySelector('.preview-placeholder');
+  const enhancedVideo = document.getElementById('enhancedVideo');
+
+  // Hide placeholder and video during enhancement
+  if (placeholder) placeholder.style.display = 'none';
+  enhancedVideo.style.display = 'none';
+
   const progressContainer = document.createElement('div');
   progressContainer.className = 'progress-container';
+  progressContainer.style.position = 'absolute';
+  progressContainer.style.top = '50%';
+  progressContainer.style.left = '50%';
+  progressContainer.style.transform = 'translate(-50%, -50%)';
+  progressContainer.style.width = '80%';
+  progressContainer.style.zIndex = '1000';
   progressContainer.innerHTML = `
     <div class="progress-bar" id="progressBar"></div>
     <div class="progress-text" id="progressText">Starting...</div>
   `;
-  document.querySelector('.settings-panel').appendChild(progressContainer);
+  
+  previewBox.style.position = 'relative';
+  previewBox.appendChild(progressContainer);
+
+  updateProgress(0, 'Initializing...');
 
   try {
     const inputPath = currentFile.path;
@@ -225,6 +243,8 @@ async function enhanceVideo() {
       console.error('Input file not found at:', inputPath);
       throw new Error('Input video file not found. Please select the file again.');
     }
+
+    updateProgress(5, 'Analyzing input video...');
 
     const outputDir = outputPath
       ? path.dirname(outputPath)
@@ -236,7 +256,7 @@ async function enhanceVideo() {
       fs.mkdirSync(outputDir, { recursive: true });
     }
 
-    updateProgress(10, 'Preparing enhancement...');
+    updateProgress(10, 'Loading enhancement model...');
 
     const model = enhancementSettings.upscaling === '2x'
       ? 'RealESRGAN_x2plus'
@@ -247,13 +267,23 @@ async function enhanceVideo() {
     const scalessettings = enhancementSettings.upscaling === '2x'
       ? 2
       : enhancementSettings.upscaling === '4x'
-        ? 4
+        ? 4 
         : 1.5;
 
+    updateProgress(15, 'Preparing enhancement pipeline...');
+    
     const projectPath = path.join(__dirname, '..', 'Real-ESRGAN-master');
     console.log('Project path:', projectPath);
 
-    updateProgress(30, 'Running enhancement...');
+    // Start a progress simulation for the enhancement process
+    let currentProgress = 15;
+    const progressInterval = setInterval(() => {
+      if (currentProgress < 85) {
+        currentProgress += 0.5;
+        const stage = getEnhancementStage(currentProgress);
+        updateProgress(currentProgress, stage);
+      }
+    }, 500);
 
     const result = await ipcRenderer.invoke('execute-enhancement', {
       projectPath,
@@ -263,13 +293,15 @@ async function enhanceVideo() {
       scalessettings
     });
 
+    clearInterval(progressInterval);
+
     if (!result.success) {
       console.error('Enhancement failed - Error:', result.error);
       console.error('Stack:', result.stack);
       throw new Error(result.error);
     }
 
-    updateProgress(90, 'Loading enhanced video...');
+    updateProgress(85, 'Processing completed, preparing final video...');
 
     const fullOutputPath = result.outputFile;
     console.log('Full output path:', fullOutputPath);
@@ -280,9 +312,7 @@ async function enhanceVideo() {
     }
 
     // Get video element and related DOM elements
-    const enhancedVideo = document.getElementById('enhancedVideo');
     const previewLabel = document.querySelector('.preview-box:nth-child(2) .preview-label');
-    const placeholder = document.querySelector('.preview-box:nth-child(2) .preview-placeholder');
 
     // Construct video source URL
     const videoSrc = `file://${fullOutputPath.replace(/\\/g, '/')}`;
@@ -349,18 +379,42 @@ async function enhanceVideo() {
 
     setTimeout(() => {
       const container = document.querySelector('.progress-container');
-      if (container) container.remove();
+      if (container) {
+        container.remove();
+        // Show placeholder if enhancement failed
+        if (!enhancedVideo.src) {
+          if (placeholder) placeholder.style.display = 'block';
+        }
+      }
     }, 1500);
   }
 }
 
-// Helper function to update progress
+// Helper function to determine enhancement stage based on progress
+function getEnhancementStage(progress) {
+  if (progress < 20) return 'Initializing enhancement model...';
+  if (progress < 30) return 'Extracting video frames...';
+  if (progress < 40) return 'Analyzing frame quality...';
+  if (progress < 50) return 'Applying AI upscaling...';
+  if (progress < 60) return 'Enhancing frame details...';
+  if (progress < 70) return 'Applying noise reduction...';
+  if (progress < 80) return 'Reconstructing frames...';
+  if (progress < 85) return 'Finalizing video processing...';
+  return 'Preparing final output...';
+}
+
+// Update the progress function to make transitions smoother
 function updateProgress(percent, message) {
   const progressBar = document.getElementById('progressBar');
   const progressText = document.getElementById('progressText');
   
-  if (progressBar) progressBar.style.width = `${percent}%`;
-  if (progressText) progressText.textContent = message;
+  if (progressBar) {
+    progressBar.style.transition = 'width 0.5s ease-out';
+    progressBar.style.width = `${percent}%`;
+  }
+  if (progressText) {
+    progressText.textContent = `${message} (${Math.round(percent)}%)`;
+  }
 }
 
 // History functions
