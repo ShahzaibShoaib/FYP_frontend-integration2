@@ -92,7 +92,7 @@ ipcMain.handle('execute-enhancement', async (event, { projectPath, inputPath, ou
     if (!fs.existsSync(inputPath)) throw new Error(`Input file not found at ${inputPath}`);
 
     // Prepare chained command
-    const command = `cmd.exe /c "cd /d ${projectPath} && call .venv\\Scripts\\activate.bat && python "${scriptPath}" -i "${inputPath}" -o "${outputPath}" -n ${model} --outscale ${scalessettings}"`;
+    const command = `cmd.exe /c "cd /d ${projectPath} && call .venv\\Scripts\\activate.bat && python "${scriptPath}" -i "${inputPath}" -o "${outputPath}" -n ${model} --outscale ${scalessettings} --face_enhance"`;
 
     console.log('Executing command:', command);
     const { stdout, stderr } = await execPromise(command, {
